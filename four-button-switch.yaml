@@ -1,0 +1,92 @@
+blueprint:
+  name: Four Button Switch - Two Light Groups
+  description: |
+    Control two light groups with a four-button switch.
+    - Button 1: Turn on first light
+    - Button 2: Turn on second light
+    - Button 3: Turn off first light
+    - Button 4: Turn off second light
+  domain: automation
+  input:
+    switch_device:
+      name: Switch Device
+      description: The four-button switch to use
+      selector:
+        device:
+          filter:
+            - integration: mqtt
+    first_light:
+      name: First Light/Group
+      description: The first light or light group to control (buttons 1 and 3)
+      selector:
+        target:
+          entity:
+            - domain: light
+    second_light:
+      name: Second Light/Group
+      description: The second light or light group to control (buttons 2 and 4)
+      selector:
+        target:
+          entity:
+            - domain: light
+
+triggers:
+  - domain: mqtt
+    device_id: !input switch_device
+    type: action
+    subtype: press_1
+    trigger: device
+    id: top-on
+  - domain: mqtt
+    device_id: !input switch_device
+    type: action
+    subtype: press_3
+    trigger: device
+    id: top-off
+  - domain: mqtt
+    device_id: !input switch_device
+    type: action
+    subtype: press_2
+    trigger: device
+    id: bottom-on
+  - domain: mqtt
+    device_id: !input switch_device
+    type: action
+    subtype: press_4
+    trigger: device
+    id: bottom-off
+
+conditions: []
+
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id:
+              - top-on
+        sequence:
+          - service: light.turn_on
+            target: !input first_light
+      - conditions:
+          - condition: trigger
+            id:
+              - top-off
+        sequence:
+          - service: light.turn_off
+            target: !input first_light
+      - conditions:
+          - condition: trigger
+            id:
+              - bottom-on
+        sequence:
+          - service: light.turn_on
+            target: !input second_light
+      - conditions:
+          - condition: trigger
+            id:
+              - bottom-off
+        sequence:
+          - service: light.turn_off
+            target: !input second_light
+
+mode: single
