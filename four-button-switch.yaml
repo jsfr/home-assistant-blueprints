@@ -68,6 +68,9 @@ triggers:
 conditions: []
 
 actions:
+  - variables:
+      _circadian: !input circadian_switch
+
   - choose:
       - conditions:
           - condition: trigger
@@ -77,11 +80,10 @@ actions:
           - service: light.turn_on
             target: !input first_light
             data: >
-              {% set circadian = !input circadian_switch %}
-              {% if circadian %}
+              {% if _circadian %}
                 {
-                  "kelvin": {{ state_attr(circadian, 'colortemp') | int }},
-                  "brightness_pct": {{ state_attr(circadian, 'brightness') | int }}
+                  "kelvin": {{ state_attr(_circadian, 'colortemp') | int }},
+                  "brightness_pct": {{ state_attr(_circadian, 'brightness') | int }}
                 }
               {% else %}
                 {}
@@ -101,11 +103,10 @@ actions:
           - service: light.turn_on
             target: !input second_light
             data: >
-              {% set circadian = !input circadian_switch %}
-              {% if circadian %}
+              {% if _circadian %}
                 {
-                  "kelvin": {{ state_attr(circadian, 'colortemp') | int }},
-                  "brightness_pct": {{ state_attr(circadian, 'brightness') | int }}
+                  "kelvin": {{ state_attr(_circadian, 'colortemp') | int }},
+                  "brightness_pct": {{ state_attr(_circadian, 'brightness') | int }}
                 }
               {% else %}
                 {}
