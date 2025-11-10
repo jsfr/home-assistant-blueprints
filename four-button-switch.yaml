@@ -29,6 +29,15 @@ blueprint:
         target:
           entity:
             - domain: light
+    circadian_switch:
+      name: Circadian Lighting Switch (Optional)
+      description: Optional circadian lighting switch to control brightness and color temperature
+      default: []
+      selector:
+        entity:
+          filter:
+            - domain: switch
+              integration: circadian_lighting
 
 triggers:
   - domain: mqtt
@@ -67,6 +76,16 @@ actions:
         sequence:
           - service: light.turn_on
             target: !input first_light
+            data: >
+              {% set circadian = !input circadian_switch %}
+              {% if circadian %}
+                {
+                  "kelvin": {{ state_attr(circadian, 'colortemp') | int }},
+                  "brightness_pct": {{ state_attr(circadian, 'brightness') | int }}
+                }
+              {% else %}
+                {}
+              {% endif %}
       - conditions:
           - condition: trigger
             id:
@@ -81,6 +100,16 @@ actions:
         sequence:
           - service: light.turn_on
             target: !input second_light
+            data: >
+              {% set circadian = !input circadian_switch %}
+              {% if circadian %}
+                {
+                  "kelvin": {{ state_attr(circadian, 'colortemp') | int }},
+                  "brightness_pct": {{ state_attr(circadian, 'brightness') | int }}
+                }
+              {% else %}
+                {}
+              {% endif %}
       - conditions:
           - condition: trigger
             id:
