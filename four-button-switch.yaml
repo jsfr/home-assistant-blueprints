@@ -30,9 +30,8 @@ blueprint:
           entity:
             - domain: light
     circadian_switch:
-      name: Circadian Lighting Switch (Optional)
-      description: Optional circadian lighting switch to control brightness and color temperature
-      default: []
+      name: Circadian Lighting Switch
+      description: Circadian lighting switch to control brightness and color temperature
       selector:
         entity:
           filter:
@@ -82,7 +81,7 @@ actions:
             data: >
               {% if _circadian %}
                 {
-                  "kelvin": {{ state_attr(_circadian, 'colortemp') | int }},
+                  "color_temp_kelvin": {{ state_attr(_circadian, 'colortemp') | int }},
                   "brightness_pct": {{ state_attr(_circadian, 'brightness') | int }}
                 }
               {% else %}
@@ -105,7 +104,7 @@ actions:
             data: >
               {% if _circadian %}
                 {
-                  "kelvin": {{ state_attr(_circadian, 'colortemp') | int }},
+                  "color_temp_kelvin": {{ state_attr(_circadian, 'colortemp') | int }},
                   "brightness_pct": {{ state_attr(_circadian, 'brightness') | int }}
                 }
               {% else %}
