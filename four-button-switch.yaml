@@ -15,20 +15,16 @@ blueprint:
         device:
           filter:
             - integration: mqtt
-    first_light:
-      name: First Light/Group
-      description: The first light or light group to control (buttons 1 and 3)
+    first_light_mqtt_topic:
+      name: First Light/Group MQTT Topic
+      description: The zigbee2mqtt topic for the first light (e.g., zigbee2mqtt/living_room_light)
       selector:
-        target:
-          entity:
-            - domain: light
-    second_light:
-      name: Second Light/Group
-      description: The second light or light group to control (buttons 2 and 4)
+        text:
+    second_light_mqtt_topic:
+      name: Second Light/Group MQTT Topic
+      description: The zigbee2mqtt topic for the second light (e.g., zigbee2mqtt/bedroom_light)
       selector:
-        target:
-          entity:
-            - domain: light
+        text:
     circadian_switch:
       name: Circadian Lighting Switch
       description: Circadian lighting switch to control brightness and color temperature
@@ -69,6 +65,10 @@ conditions: []
 actions:
   - variables:
       _circadian: !input circadian_switch
+      _first_light_topic: !input first_light_mqtt_topic
+      _second_light_topic: !input second_light_mqtt_topic
+      _color_temp: "{{ (1000000 / (state_attr(_circadian, 'colortemp') | int)) | int }}"
+      _brightness: "{{ (state_attr(_circadian, 'brightness') * 2.55) | int }}"
 
   - choose:
       - conditions:
@@ -76,46 +76,46 @@ actions:
             id:
               - top-on
         sequence:
-          - service: light.turn_on
-            target: !input first_light
-            data: >
-              {% if _circadian %}
+          - service: mqtt.publish
+            data:
+              topic: "{{ _first_light_topic }}/set"
+              payload: >
                 {
-                  "color_temp_kelvin": {{ state_attr(_circadian, 'colortemp') | int }},
-                  "brightness_pct": {{ state_attr(_circadian, 'brightness') | int }}
+                  "state": "ON",
+                  "color_temp": {{ _color_temp }},
+                  "brightness": {{ _brightness }}
                 }
-              {% else %}
-                {}
-              {% endif %}
       - conditions:
           - condition: trigger
             id:
               - top-off
         sequence:
-          - service: light.turn_off
-            target: !input first_light
+          - service: mqtt.publish
+            data:
+              topic: "{{ _first_light_topic }}/set"
+              payload: '{"state": "OFF"}'
       - conditions:
           - condition: trigger
             id:
               - bottom-on
         sequence:
-          - service: light.turn_on
-            target: !input second_light
-            data: >
-              {% if _circadian %}
+          - service: mqtt.publish
+            data:
+              topic: "{{ _second_light_topic }}/set"
+              payload: >
                 {
-                  "color_temp_kelvin": {{ state_attr(_circadian, 'colortemp') | int }},
-                  "brightness_pct": {{ state_attr(_circadian, 'brightness') | int }}
+                  "state": "ON",
+                  "color_temp": {{ _color_temp }},
+                  "brightness": {{ _brightness }}
                 }
-              {% else %}
-                {}
-              {% endif %}
       - conditions:
           - condition: trigger
             id:
               - bottom-off
         sequence:
-          - service: light.turn_off
-            target: !input second_light
+          - service: mqtt.publish
+            data:
+              topic: "{{ _second_light_topic }}/set"
+              payload: '{"state": "OFF"}'
 
 mode: single
