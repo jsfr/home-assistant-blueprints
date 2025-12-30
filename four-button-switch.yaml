@@ -91,7 +91,8 @@ actions:
                 {
                   "state": "ON",
                   "color_temp": {{ _color_temp }},
-                  "brightness": {{ _brightness }}
+                  "brightness": {{ _brightness }},
+                  "transition": 1
                 }
       - conditions:
           - condition: trigger
@@ -114,7 +115,8 @@ actions:
                 {
                   "state": "ON",
                   "color_temp": {{ _color_temp }},
-                  "brightness": {{ _brightness }}
+                  "brightness": {{ _brightness }},
+                  "transition": 1
                 }
       - conditions:
           - condition: trigger
