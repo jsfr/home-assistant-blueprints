@@ -75,8 +75,20 @@ actions:
       _second_light: !input second_light
       _first_light_topic: "zigbee2mqtt/{{ state_attr(_first_light, 'friendly_name') }}"
       _second_light_topic: "zigbee2mqtt/{{ state_attr(_second_light, 'friendly_name') }}"
-      _color_temp: "{{ (1000000 / (state_attr(_circadian, 'colortemp') | int)) | int }}"
-      _brightness: "{{ (state_attr(_circadian, 'brightness') * 2.55) | int }}"
+      _color_temp_kelvin: "{{ state_attr(_circadian, 'colortemp') }}"
+      _brightness_pct: "{{ state_attr(_circadian, 'brightness') }}"
+      _color_temp: >
+        {% if _color_temp_kelvin is number %}
+          {{ (1000000 / (_color_temp_kelvin | int)) | int }}
+        {% else %}
+          null
+        {% endif %}
+      _brightness: >
+        {% if _brightness_pct is number %}
+          {{ (_brightness_pct * 2.55) | int }}
+        {% else %}
+          null
+        {% endif %}
 
   - choose:
       - conditions:
